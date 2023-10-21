@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Interval Timer"
+rootProject.name = "android_interval_timer"
 include(":app")
