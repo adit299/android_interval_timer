@@ -36,7 +36,7 @@ public class TimerActivity extends AppCompatActivity {
 
         // Initialize timer
         timer = new IntervalCountDownTimer(
-                createDurationTimer(DURATION_MILLISECONDS, 1000),
+                createDurationTimer(DURATION_MILLISECONDS, 100),
                 createIntervalTimer(DURATION_MILLISECONDS, INTERVAL_MILLISECONDS)
         );
 
@@ -76,11 +76,11 @@ public class TimerActivity extends AppCompatActivity {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createDurationTimer(long durationMillis, long intervalMillis) {
-        CountDownTimer durationTimer = new CountDownTimer(durationMillis, 100) {
+        CountDownTimer durationTimer = new CountDownTimer(durationMillis, intervalMillis) {
             @Override
             public void onTick(long millisUntilFinished) {
                 durationVal.setText(formatTimeString(millisUntilFinished));
-                intervalTimingVal.setText(formatTimeString(millisUntilFinished % (intervalMillis + 1000)));
+                intervalTimingVal.setText(formatTimeString(millisUntilFinished % (INTERVAL_MILLISECONDS)));
             }
 
             @Override
