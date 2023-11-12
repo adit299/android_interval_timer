@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 if(inputValidator.fullValidation()) {
                     // Proceed to next screen, passing the values
                     // Also set the number of beeps
+                    inputValidator.setNumOfBeeps();
                     redirectToSecondActivity(inputValidator.getNumOfBeeps());
                 }
                 else {

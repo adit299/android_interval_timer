@@ -4,8 +4,8 @@ import android.widget.Spinner;
 
 public class InputValidator {
 
-    private String fullDurationTime;
-    private String fullIntervalTime;
+    private Integer fullDurationTimeSeconds;
+    private Integer fullIntervalTimeSeconds;
     private Integer durationHours;
     private Integer durationMinutes;
     private Integer durationSeconds;
@@ -24,25 +24,23 @@ public class InputValidator {
         this.intervalTimerMinutes = Integer.valueOf(intervalTimerMinutes);
         this.intervalTimerSeconds = Integer.valueOf(intervalTimerSeconds);
 
-        this.fullDurationTime = durationHours + durationMinutes + durationSeconds;
-        this.fullIntervalTime = intervalTimerHours + intervalTimerMinutes + intervalTimerSeconds;
+        this.fullDurationTimeSeconds = (this.durationHours * 3600) + (this.durationMinutes*60) + this.durationSeconds;
+        this.fullIntervalTimeSeconds = (this.intervalTimerHours * 3600) + (this.intervalTimerMinutes*60) + this.intervalTimerSeconds;
+
+        System.out.println(fullDurationTimeSeconds);
+        System.out.println(fullIntervalTimeSeconds);
 
         this.numOfBeeps = 0;
     }
 
     private Boolean isIntervalLessThanDuration() {
-        return intervalTimerHours <= durationHours &&
-                intervalTimerMinutes <= durationMinutes &&
-                intervalTimerSeconds <= durationSeconds;
+        return fullIntervalTimeSeconds <= fullDurationTimeSeconds;
     }
 
     private Boolean doesIntervalDivideIntoDuration() {
         boolean retVal = false;
         if(isIntervalLessThanDuration()) {
-            retVal = (Integer.valueOf(fullDurationTime) % Integer.valueOf(fullIntervalTime)) == 0;
-        }
-        if(retVal) {
-            this.numOfBeeps = Integer.valueOf(fullDurationTime) / Integer.valueOf(fullIntervalTime);
+            retVal = (fullDurationTimeSeconds == 0 && fullIntervalTimeSeconds == 0) ? false : (fullDurationTimeSeconds % fullIntervalTimeSeconds) == 0;
         }
         return retVal;
     }
@@ -52,9 +50,13 @@ public class InputValidator {
         return doesIntervalDivideIntoDuration();
     }
 
+    public void setNumOfBeeps() {
+        if(fullValidation()) {
+            this.numOfBeeps = fullDurationTimeSeconds / fullIntervalTimeSeconds;
+        }
+    }
+
     public Integer getNumOfBeeps() { return this.numOfBeeps; }
-
-
 
 
 }
