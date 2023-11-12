@@ -2,12 +2,13 @@ package com.example.intervaltimer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.intervaltimer.validation.InputValidator;
 
@@ -82,14 +83,27 @@ public class MainActivity extends AppCompatActivity {
                 if(inputValidator.fullValidation()) {
                     // Proceed to next screen, passing the values
                     // Also set the number of beeps
+                    redirectToSecondActivity(inputValidator.getNumOfBeeps());
                 }
                 else {
-                    // Throw an error
+                    // Show an error
+                    Toast.makeText(getApplicationContext(), "ERROR: Invalid Input. Try Again.", Toast.LENGTH_LONG).show();
                 }
-
             }
         });
 
+    }
+
+    void redirectToSecondActivity(Integer numOfBeeps) {
+        Intent intent = new Intent(MainActivity.this, TimerActivity.class);
+        intent.putExtra("durationHours", durationHours.getSelectedItem().toString());
+        intent.putExtra("durationMinutes", durationMinutes.getSelectedItem().toString());
+        intent.putExtra("durationSeconds", durationSeconds.getSelectedItem().toString());
+        intent.putExtra("intervalTimerHours", intervalTimerHours.getSelectedItem().toString());
+        intent.putExtra("intervalTimerMinutes", intervalTimerMinutes.getSelectedItem().toString());
+        intent.putExtra("intervalTimerSeconds", intervalTimerSeconds.getSelectedItem().toString());
+        intent.putExtra("numOfBeeps", numOfBeeps);
+        startActivity(intent);
     }
 
 

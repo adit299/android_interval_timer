@@ -52,6 +52,8 @@ public class InputValidator {
         return doesIntervalDivideIntoDuration();
     }
 
+    public Integer getNumOfBeeps() { return this.numOfBeeps; }
+
 
 
 
