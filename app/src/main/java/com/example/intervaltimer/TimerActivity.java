@@ -7,8 +7,6 @@ import android.os.CountDownTimer;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.intervaltimer.timer.IntervalCountDownTimer;
-
 public class TimerActivity extends AppCompatActivity {
 
     /*** Temp hardcoded values for timer inputs ***/
@@ -17,6 +15,7 @@ public class TimerActivity extends AppCompatActivity {
     private static final int BEEPS = 5;
     /**********************************************/
 
+    private static final String ZERO_TIME_STRING = formatTimeString(0);
     private static int beepCounter = 0;
     private TextView durationVal;
     private TextView intervalTimingVal;
@@ -24,7 +23,7 @@ public class TimerActivity extends AppCompatActivity {
     private Button startButton;
     private Button resetButton;
     private Button backButton;
-    private IntervalCountDownTimer timer;
+    private CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +34,7 @@ public class TimerActivity extends AppCompatActivity {
         // TODO
 
         // Initialize timer
-        timer = new IntervalCountDownTimer(
-                createDurationTimer(DURATION_MILLISECONDS, 100),
-                createIntervalTimer(DURATION_MILLISECONDS, INTERVAL_MILLISECONDS)
-        );
+        timer = createDurationTimer(DURATION_MILLISECONDS);
 
         // Get button elements
         backButton = findViewById(R.id.back_button);
@@ -50,10 +46,10 @@ public class TimerActivity extends AppCompatActivity {
                 TimerActivity.this.finish()
         );
         startButton.setOnClickListener(view ->
-            timer.startTimers()
+                timer.start()
         );
         resetButton.setOnClickListener(view -> {
-            timer.cancelTimers();
+            timer.cancel();
             resetTimerValues();
         });
 
@@ -69,50 +65,37 @@ public class TimerActivity extends AppCompatActivity {
     }
 
     /**
-     * Initialize the CountDownTimer for the duration timer field.
+     * Initialize the timer that will update the UI every 100 milliseconds.
      *
      * @param durationMillis Duration value in milliseconds
-     * @param intervalMillis Interval value in milliseconds
      * @return The configured CountDownTimer
      */
-    private CountDownTimer createDurationTimer(long durationMillis, long intervalMillis) {
-        CountDownTimer durationTimer = new CountDownTimer(durationMillis, intervalMillis) {
+    private CountDownTimer createDurationTimer(long durationMillis) {
+        CountDownTimer durationTimer = new CountDownTimer(durationMillis, 100) {
             @Override
             public void onTick(long millisUntilFinished) {
+                // Sometimes this function gets called too quickly, avoid updating if no time has elapsed
+                if (millisUntilFinished == DURATION_MILLISECONDS) {
+                    return;
+                }
+                // Get value of interval timer, used to check if the interval is over
+                String intervalTimeString = formatTimeString(millisUntilFinished % (INTERVAL_MILLISECONDS));
+                // Check if the interval is done (Need to check string to avoid accuracy errors in durationMillis)
+                if (intervalTimeString.equals(ZERO_TIME_STRING)) {
+                    beepCounter += 1;
+                    numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
+                }
+                intervalTimingVal.setText(intervalTimeString);
                 durationVal.setText(formatTimeString(millisUntilFinished));
-                intervalTimingVal.setText(formatTimeString(millisUntilFinished % (INTERVAL_MILLISECONDS)));
             }
 
             @Override
             public void onFinish() {
                 durationVal.setText(formatTimeString(0));
+                intervalTimingVal.setText(formatTimeString(0));
             }
         };
         return durationTimer;
-    }
-
-    /**
-     * Initialize the CountDownTimer for the interval field.
-     *
-     * @param durationMillis Duration value in milliseconds
-     * @param intervalMillis Interval value in milliseconds
-     * @return The configured CountDownTimer
-     */
-    private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
-        CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
-                beepCounter += 1;
-            }
-
-            @Override
-            public void onFinish() {
-                intervalTimingVal.setText(formatTimeString(0));
-                numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
-            }
-        };
-        return intervalTimer;
     }
 
     /**
@@ -132,7 +115,7 @@ public class TimerActivity extends AppCompatActivity {
      * @param millis The time value in milliseconds.
      * @return The formatted time.
      */
-    private String formatTimeString(long millis) {
+    private static String formatTimeString(long millis) {
         int tenths = (int) (millis / 100) % 10;
         int seconds = (int) (millis / 1000) % 60;
         int minutes = (int) ((millis / (1000*60)) % 60);
@@ -146,7 +129,7 @@ public class TimerActivity extends AppCompatActivity {
      * @param numberOfBeeps The number of beeps to display.
      * @return The formatted number of beeps.
      */
-    private String formatNumberOfBeeps(int numberOfBeeps) {
+    private static String formatNumberOfBeeps(int numberOfBeeps) {
         return String.format("%d / %d", numberOfBeeps, BEEPS);
     }
 }
