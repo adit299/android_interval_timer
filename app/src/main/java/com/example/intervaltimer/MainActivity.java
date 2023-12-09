@@ -95,13 +95,26 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "ERROR: Invalid Input. Try Again.", Toast.LENGTH_LONG).show();
             }
         });
+
+        resetBtn.setOnClickListener(v -> {
+            resetInputs();
+        });
     }
 
-    void redirectToSecondActivity() {
+    private void redirectToSecondActivity() {
         Intent intent = new Intent(MainActivity.this, TimerActivity.class);
         intent.putExtra(DURATION_INTENT_KEY, inputValidator.getDurationMilliseconds());
         intent.putExtra(INTERVAL_INTENT_KEY, inputValidator.getIntervalMilliseconds());
         intent.putExtra(BEEPS_INTENT_KEY, inputValidator.getNumOfBeeps());
         startActivity(intent);
+    }
+
+    private void resetInputs() {
+        durationHours.setSelection(0);
+        durationMinutes.setSelection(0);
+        durationSeconds.setSelection(0);
+        intervalTimerHours.setSelection(0);
+        intervalTimerMinutes.setSelection(0);
+        intervalTimerSeconds.setSelection(0);
     }
 }
