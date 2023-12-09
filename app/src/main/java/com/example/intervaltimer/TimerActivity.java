@@ -12,7 +12,7 @@ import com.example.intervaltimer.timer.IntervalCountDownTimer;
 
 public class TimerActivity extends AppCompatActivity {
 
-    private static int beepCounter = 0;
+    private int beepCounter;
     private TextView durationVal;
     private TextView intervalTimingVal;
     private TextView numberOfBeepsVal;
@@ -28,6 +28,7 @@ public class TimerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
+        beepCounter = 0;
 
         // Extract initial timer values from saved instance state
         Intent intent = getIntent();
@@ -48,9 +49,7 @@ public class TimerActivity extends AppCompatActivity {
 
         // Set button click behaviour
         backButton.setOnClickListener(view -> {
-            // TODO: Figure out a way to avoid resetting the values before going back
             timer.cancelTimers();
-            resetTimerValues();
             TimerActivity.this.finish();
         });
         startButton.setOnClickListener(view ->

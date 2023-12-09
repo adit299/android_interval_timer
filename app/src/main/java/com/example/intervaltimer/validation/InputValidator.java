@@ -1,7 +1,5 @@
 package com.example.intervaltimer.validation;
 
-import android.widget.Spinner;
-
 public class InputValidator {
 
     private Integer fullDurationTimeSeconds;
@@ -40,7 +38,7 @@ public class InputValidator {
     private Boolean doesIntervalDivideIntoDuration() {
         boolean retVal = false;
         if(isIntervalLessThanDuration()) {
-            retVal = (fullDurationTimeSeconds == 0 && fullIntervalTimeSeconds == 0) ? false : (fullDurationTimeSeconds % fullIntervalTimeSeconds) == 0;
+            retVal = (fullDurationTimeSeconds == 0 || fullIntervalTimeSeconds == 0) ? false : (fullDurationTimeSeconds % fullIntervalTimeSeconds) == 0;
         }
         return retVal;
     }
