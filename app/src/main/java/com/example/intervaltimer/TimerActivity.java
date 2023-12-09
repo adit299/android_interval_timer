@@ -2,6 +2,7 @@ package com.example.intervaltimer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.widget.Button;
@@ -11,12 +12,6 @@ import com.example.intervaltimer.timer.IntervalCountDownTimer;
 
 public class TimerActivity extends AppCompatActivity {
 
-    /*** Temp hardcoded values for timer inputs ***/
-    private static final long DURATION_MILLISECONDS = 10*1000; // 3 secs
-    private static final long INTERVAL_MILLISECONDS = 2*1000; // 1 sec
-    private static final int BEEPS = 5;
-    /**********************************************/
-
     private static int beepCounter = 0;
     private TextView durationVal;
     private TextView intervalTimingVal;
@@ -25,6 +20,9 @@ public class TimerActivity extends AppCompatActivity {
     private Button resetButton;
     private Button backButton;
     private IntervalCountDownTimer timer;
+    private long durationMillisInput;
+    private long intervalMillisInput;
+    private int numOfBeepsInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +30,15 @@ public class TimerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_timer);
 
         // Extract initial timer values from saved instance state
-        // TODO
+        Intent intent = getIntent();
+        durationMillisInput = intent.getLongExtra(MainActivity.DURATION_INTENT_KEY, 0);
+        intervalMillisInput = intent.getLongExtra(MainActivity.INTERVAL_INTENT_KEY, 0);
+        numOfBeepsInput = intent.getIntExtra(MainActivity.BEEPS_INTENT_KEY, 0);
 
         // Initialize timer
         timer = new IntervalCountDownTimer(
-                createDurationTimer(DURATION_MILLISECONDS, 100),
-                createIntervalTimer(DURATION_MILLISECONDS, INTERVAL_MILLISECONDS)
+            createDurationTimer(durationMillisInput, 100),
+            createIntervalTimer(durationMillisInput, intervalMillisInput)
         );
 
         // Get button elements
@@ -46,9 +47,12 @@ public class TimerActivity extends AppCompatActivity {
         resetButton = findViewById(R.id.reset_timer_button);
 
         // Set button click behaviour
-        backButton.setOnClickListener(view -> 
-                TimerActivity.this.finish()
-        );
+        backButton.setOnClickListener(view -> {
+            // TODO: Figure out a way to avoid resetting the values before going back
+            timer.cancelTimers();
+            resetTimerValues();
+            TimerActivity.this.finish();
+        });
         startButton.setOnClickListener(view ->
             timer.startTimers()
         );
@@ -63,8 +67,8 @@ public class TimerActivity extends AppCompatActivity {
         numberOfBeepsVal = findViewById(R.id.number_of_beeps_val);
 
         // Initialize text values
-        durationVal.setText(formatTimeString(DURATION_MILLISECONDS));
-        intervalTimingVal.setText(formatTimeString(INTERVAL_MILLISECONDS));
+        durationVal.setText(formatTimeString(durationMillisInput));
+        intervalTimingVal.setText(formatTimeString(intervalMillisInput));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
     }
 
@@ -80,7 +84,7 @@ public class TimerActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 durationVal.setText(formatTimeString(millisUntilFinished));
-                intervalTimingVal.setText(formatTimeString(millisUntilFinished % (INTERVAL_MILLISECONDS)));
+                intervalTimingVal.setText(formatTimeString(millisUntilFinished % (intervalMillisInput)));
             }
 
             @Override
@@ -120,8 +124,8 @@ public class TimerActivity extends AppCompatActivity {
      */
     private void resetTimerValues() {
         // Reset text to the initial values
-        durationVal.setText(formatTimeString(DURATION_MILLISECONDS));
-        intervalTimingVal.setText(formatTimeString(INTERVAL_MILLISECONDS));
+        durationVal.setText(formatTimeString(durationMillisInput));
+        intervalTimingVal.setText(formatTimeString(intervalMillisInput));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
         beepCounter = 0;
     }
@@ -147,6 +151,6 @@ public class TimerActivity extends AppCompatActivity {
      * @return The formatted number of beeps.
      */
     private String formatNumberOfBeeps(int numberOfBeeps) {
-        return String.format("%d / %d", numberOfBeeps, BEEPS);
+        return String.format("%d / %d", numberOfBeeps, numOfBeepsInput);
     }
 }

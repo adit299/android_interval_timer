@@ -45,18 +45,25 @@ public class InputValidator {
         return retVal;
     }
 
-
     public Boolean fullValidation() {
+        boolean isValid = doesIntervalDivideIntoDuration();
+        if (isValid) {
+            setNumOfBeeps();
+        }
         return doesIntervalDivideIntoDuration();
     }
 
     public void setNumOfBeeps() {
-        if(fullValidation()) {
-            this.numOfBeeps = fullDurationTimeSeconds / fullIntervalTimeSeconds;
-        }
+        this.numOfBeeps = fullDurationTimeSeconds / fullIntervalTimeSeconds;
     }
 
     public Integer getNumOfBeeps() { return this.numOfBeeps; }
 
+    public long getDurationMilliseconds() {
+        return (durationHours * 60 * 60 * 1000) + (durationMinutes * 60 * 1000) + (durationSeconds * 1000);
+    }
 
+    public long getIntervalMilliseconds() {
+        return (intervalTimerHours * 60 * 60 * 1000) + (intervalTimerMinutes * 60 * 1000) + (intervalTimerSeconds * 1000);
+    }
 }
