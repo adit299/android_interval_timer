@@ -1,22 +1,34 @@
 package com.example.intervaltimer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class TimerActivity extends AppCompatActivity {
 
     /*** Temp hardcoded values for timer inputs ***/
-    private static final long DURATION_MILLISECONDS = 10*1000; // 3 secs
-    private static final long INTERVAL_MILLISECONDS = 2*1000; // 1 sec
+    private static final long DURATION_MILLISECONDS = 10 * 1000; // 3 secs
+    private static final long INTERVAL_MILLISECONDS = 2 * 1000; // 1 sec
     private static final int BEEPS = 5;
     /**********************************************/
 
     private static final String ZERO_TIME_STRING = formatTimeString(0);
     private static int beepCounter = 0;
+    private String CHANNEL_ID = "1";
+    private NotificationCompat.Builder notificationBuilder;
+    private NotificationManagerCompat notificationManager;
     private TextView durationVal;
     private TextView intervalTimingVal;
     private TextView numberOfBeepsVal;
@@ -36,13 +48,36 @@ public class TimerActivity extends AppCompatActivity {
         // Initialize timer
         timer = createDurationTimer(DURATION_MILLISECONDS);
 
+        // Initialize notification channel and notification settings
+        createNotificationChannel();
+
+        notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("A beep was triggered!!")
+                .setPriority(NotificationCompat.PRIORITY_MAX);
+
+        notificationManager = NotificationManagerCompat.from(this);
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        // Initialize Vibrator
+        // vibrator = this.getSystemService(Vibrator.class);
+
         // Get button elements
         backButton = findViewById(R.id.back_button);
         startButton = findViewById(R.id.start_timer_button);
         resetButton = findViewById(R.id.reset_timer_button);
 
         // Set button click behaviour
-        backButton.setOnClickListener(view -> 
+        backButton.setOnClickListener(view ->
                 TimerActivity.this.finish()
         );
         startButton.setOnClickListener(view ->
@@ -62,6 +97,26 @@ public class TimerActivity extends AppCompatActivity {
         durationVal.setText(formatTimeString(DURATION_MILLISECONDS));
         intervalTimingVal.setText(formatTimeString(INTERVAL_MILLISECONDS));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is not in the Support Library.
+        // Maybe we don't need this check?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Customize the notification to vibrate and flash lights
+            channel.setVibrationPattern(new long[]{0});
+            channel.enableLights(true);
+            // Register the channel with the system. You can't change the importance
+            // or other notification behaviors after this.
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     /**
@@ -84,6 +139,18 @@ public class TimerActivity extends AppCompatActivity {
                 if (intervalTimeString.equals(ZERO_TIME_STRING)) {
                     beepCounter += 1;
                     numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
+                    // Make the phone produce a noise and vibrate once the interval is over
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
                 }
                 intervalTimingVal.setText(intervalTimeString);
                 durationVal.setText(formatTimeString(millisUntilFinished));
