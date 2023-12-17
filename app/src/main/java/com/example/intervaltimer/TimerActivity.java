@@ -59,20 +59,6 @@ public class TimerActivity extends AppCompatActivity {
 
         notificationManager = NotificationManagerCompat.from(this);
 
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        // Initialize Vibrator
-        // vibrator = this.getSystemService(Vibrator.class);
-
         // Get button elements
         backButton = findViewById(R.id.back_button);
         startButton = findViewById(R.id.start_timer_button);
