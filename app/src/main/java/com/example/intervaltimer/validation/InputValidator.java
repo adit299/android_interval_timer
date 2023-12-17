@@ -1,7 +1,5 @@
 package com.example.intervaltimer.validation;
 
-import android.widget.Spinner;
-
 public class InputValidator {
 
     private Integer fullDurationTimeSeconds;
@@ -40,23 +38,30 @@ public class InputValidator {
     private Boolean doesIntervalDivideIntoDuration() {
         boolean retVal = false;
         if(isIntervalLessThanDuration()) {
-            retVal = (fullDurationTimeSeconds == 0 && fullIntervalTimeSeconds == 0) ? false : (fullDurationTimeSeconds % fullIntervalTimeSeconds) == 0;
+            retVal = (fullDurationTimeSeconds == 0 || fullIntervalTimeSeconds == 0) ? false : (fullDurationTimeSeconds % fullIntervalTimeSeconds) == 0;
         }
         return retVal;
     }
 
-
     public Boolean fullValidation() {
+        boolean isValid = doesIntervalDivideIntoDuration();
+        if (isValid) {
+            setNumOfBeeps();
+        }
         return doesIntervalDivideIntoDuration();
     }
 
     public void setNumOfBeeps() {
-        if(fullValidation()) {
-            this.numOfBeeps = fullDurationTimeSeconds / fullIntervalTimeSeconds;
-        }
+        this.numOfBeeps = fullDurationTimeSeconds / fullIntervalTimeSeconds;
     }
 
     public Integer getNumOfBeeps() { return this.numOfBeeps; }
 
+    public long getDurationMilliseconds() {
+        return (durationHours * 60 * 60 * 1000) + (durationMinutes * 60 * 1000) + (durationSeconds * 1000);
+    }
 
+    public long getIntervalMilliseconds() {
+        return (intervalTimerHours * 60 * 60 * 1000) + (intervalTimerMinutes * 60 * 1000) + (intervalTimerSeconds * 1000);
+    }
 }

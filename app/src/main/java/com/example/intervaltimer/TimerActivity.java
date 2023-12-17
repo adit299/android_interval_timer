@@ -4,49 +4,51 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.widget.Button;
 import android.widget.TextView;
-
 import java.util.concurrent.atomic.AtomicInteger;
+import com.example.intervaltimer.timer.IntervalCountDownTimer;
 
 public class TimerActivity extends AppCompatActivity {
-
-    /*** Temp hardcoded values for timer inputs ***/
-    private static final long DURATION_MILLISECONDS = 10 * 1000; // 3 secs
-    private static final long INTERVAL_MILLISECONDS = 2 * 1000; // 1 sec
-    private static final int BEEPS = 5;
-    /**********************************************/
-
-    private static final String ZERO_TIME_STRING = formatTimeString(0);
-    private static int beepCounter = 0;
     private String CHANNEL_ID = "1";
     private NotificationCompat.Builder notificationBuilder;
     private NotificationManagerCompat notificationManager;
+    private int beepCounter;
     private TextView durationVal;
     private TextView intervalTimingVal;
     private TextView numberOfBeepsVal;
     private Button startButton;
     private Button resetButton;
     private Button backButton;
-    private CountDownTimer timer;
+    private IntervalCountDownTimer timer;
+    private long durationMillisInput;
+    private long intervalMillisInput;
+    private int numOfBeepsInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
+        beepCounter = 0;
 
         // Extract initial timer values from saved instance state
-        // TODO
+        Intent intent = getIntent();
+        durationMillisInput = intent.getLongExtra(MainActivity.DURATION_INTENT_KEY, 0);
+        intervalMillisInput = intent.getLongExtra(MainActivity.INTERVAL_INTENT_KEY, 0);
+        numOfBeepsInput = intent.getIntExtra(MainActivity.BEEPS_INTENT_KEY, 0);
 
         // Initialize timer
-        timer = createDurationTimer(DURATION_MILLISECONDS);
+        timer = new IntervalCountDownTimer(
+            createDurationTimer(durationMillisInput, 100),
+            createIntervalTimer(durationMillisInput, intervalMillisInput)
+        );
 
         // Initialize notification channel and notification settings
         createNotificationChannel();
@@ -77,14 +79,15 @@ public class TimerActivity extends AppCompatActivity {
         resetButton = findViewById(R.id.reset_timer_button);
 
         // Set button click behaviour
-        backButton.setOnClickListener(view ->
-                TimerActivity.this.finish()
-        );
+        backButton.setOnClickListener(view -> {
+            timer.cancelTimers();
+            TimerActivity.this.finish();
+        });
         startButton.setOnClickListener(view ->
-                timer.start()
+            timer.startTimers()
         );
         resetButton.setOnClickListener(view -> {
-            timer.cancel();
+            timer.cancelTimers();
             resetTimerValues();
         });
 
@@ -94,8 +97,8 @@ public class TimerActivity extends AppCompatActivity {
         numberOfBeepsVal = findViewById(R.id.number_of_beeps_val);
 
         // Initialize text values
-        durationVal.setText(formatTimeString(DURATION_MILLISECONDS));
-        intervalTimingVal.setText(formatTimeString(INTERVAL_MILLISECONDS));
+        durationVal.setText(formatTimeString(durationMillisInput));
+        intervalTimingVal.setText(formatTimeString(intervalMillisInput));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
     }
 
@@ -120,49 +123,62 @@ public class TimerActivity extends AppCompatActivity {
     }
 
     /**
-     * Initialize the timer that will update the UI every 100 milliseconds.
+     * Initialize the CountDownTimer for the duration timer field.
      *
      * @param durationMillis Duration value in milliseconds
+     * @param intervalMillis Interval value in milliseconds
      * @return The configured CountDownTimer
      */
-    private CountDownTimer createDurationTimer(long durationMillis) {
-        CountDownTimer durationTimer = new CountDownTimer(durationMillis, 100) {
+    private CountDownTimer createDurationTimer(long durationMillis, long intervalMillis) {
+        CountDownTimer durationTimer = new CountDownTimer(durationMillis, intervalMillis) {
             @Override
             public void onTick(long millisUntilFinished) {
-                // Sometimes this function gets called too quickly, avoid updating if no time has elapsed
-                if (millisUntilFinished == DURATION_MILLISECONDS) {
-                    return;
-                }
-                // Get value of interval timer, used to check if the interval is over
-                String intervalTimeString = formatTimeString(millisUntilFinished % (INTERVAL_MILLISECONDS));
-                // Check if the interval is done (Need to check string to avoid accuracy errors in durationMillis)
-                if (intervalTimeString.equals(ZERO_TIME_STRING)) {
-                    beepCounter += 1;
-                    numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
-                    // Make the phone produce a noise and vibrate once the interval is over
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        return;
-                    }
-                    notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
-                }
-                intervalTimingVal.setText(intervalTimeString);
                 durationVal.setText(formatTimeString(millisUntilFinished));
+                intervalTimingVal.setText(formatTimeString(millisUntilFinished % (intervalMillisInput)));
             }
 
             @Override
             public void onFinish() {
                 durationVal.setText(formatTimeString(0));
-                intervalTimingVal.setText(formatTimeString(0));
             }
         };
         return durationTimer;
+    }
+
+    /**
+     * Initialize the CountDownTimer for the interval field.
+     *
+     * @param durationMillis Duration value in milliseconds
+     * @param intervalMillis Interval value in milliseconds
+     * @return The configured CountDownTimer
+     */
+    private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
+        CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
+                beepCounter += 1;
+                // Make the phone produce a noise and vibrate once the interval is over
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
+            }
+
+            @Override
+            public void onFinish() {
+                intervalTimingVal.setText(formatTimeString(0));
+                numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
+            }
+        };
+        return intervalTimer;
     }
 
     /**
@@ -170,8 +186,8 @@ public class TimerActivity extends AppCompatActivity {
      */
     private void resetTimerValues() {
         // Reset text to the initial values
-        durationVal.setText(formatTimeString(DURATION_MILLISECONDS));
-        intervalTimingVal.setText(formatTimeString(INTERVAL_MILLISECONDS));
+        durationVal.setText(formatTimeString(durationMillisInput));
+        intervalTimingVal.setText(formatTimeString(intervalMillisInput));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
         beepCounter = 0;
     }
@@ -182,7 +198,7 @@ public class TimerActivity extends AppCompatActivity {
      * @param millis The time value in milliseconds.
      * @return The formatted time.
      */
-    private static String formatTimeString(long millis) {
+    private String formatTimeString(long millis) {
         int tenths = (int) (millis / 100) % 10;
         int seconds = (int) (millis / 1000) % 60;
         int minutes = (int) ((millis / (1000*60)) % 60);
@@ -196,7 +212,7 @@ public class TimerActivity extends AppCompatActivity {
      * @param numberOfBeeps The number of beeps to display.
      * @return The formatted number of beeps.
      */
-    private static String formatNumberOfBeeps(int numberOfBeeps) {
-        return String.format("%d / %d", numberOfBeeps, BEEPS);
+    private String formatNumberOfBeeps(int numberOfBeeps) {
+        return String.format("%d / %d", numberOfBeeps, numOfBeepsInput);
     }
 }
