@@ -150,4 +150,6 @@
         <item>58</item>
         <item>59</item>
     </string-array>
+    <string name="channel_name">Alarm</string>
+    <string name="channel_description">Settings to change alarm settings</string>
 </resources>

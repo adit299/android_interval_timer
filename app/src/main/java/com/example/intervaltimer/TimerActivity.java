@@ -1,17 +1,32 @@
 package com.example.intervaltimer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.pm.PackageManager;
 import android.content.Intent;
+import android.media.AudioAttributes;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.example.intervaltimer.timer.IntervalCountDownTimer;
 
 public class TimerActivity extends AppCompatActivity {
-
+    private String CHANNEL_ID = "1";
+    private final int REQUEST_PERMISSION_PHONE_STATE = 1;
+    private NotificationCompat.Builder notificationBuilder;
+    private NotificationManagerCompat notificationManager;
     private int beepCounter;
     private TextView durationVal;
     private TextView intervalTimingVal;
@@ -38,9 +53,24 @@ public class TimerActivity extends AppCompatActivity {
 
         // Initialize timer
         timer = new IntervalCountDownTimer(
-            createDurationTimer(durationMillisInput, 100),
-            createIntervalTimer(durationMillisInput, intervalMillisInput)
+                createDurationTimer(durationMillisInput, 100),
+                createIntervalTimer(durationMillisInput, intervalMillisInput)
         );
+
+        // Request permissions for notifications
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(TimerActivity.this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_PERMISSION_PHONE_STATE);
+        }
+
+        // Initialize notification channel and notification settings
+        createNotificationChannel();
+
+        notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("A beep was triggered!!")
+                .setPriority(NotificationCompat.PRIORITY_MAX);
+
+        notificationManager = NotificationManagerCompat.from(this);
 
         // Get button elements
         backButton = findViewById(R.id.back_button);
@@ -53,7 +83,7 @@ public class TimerActivity extends AppCompatActivity {
             TimerActivity.this.finish();
         });
         startButton.setOnClickListener(view ->
-            timer.startTimers()
+                timer.startTimers()
         );
         resetButton.setOnClickListener(view -> {
             timer.cancelTimers();
@@ -69,6 +99,28 @@ public class TimerActivity extends AppCompatActivity {
         durationVal.setText(formatTimeString(durationMillisInput));
         intervalTimingVal.setText(formatTimeString(intervalMillisInput));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is not in the Support Library.
+        CharSequence name = getString(R.string.channel_name);
+        String description = getString(R.string.channel_description);
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+        channel.setDescription(description);
+        // Customize the notification to vibrate and play a noise (can also flash lights)
+        channel.setVibrationPattern(new long[]{0});
+        channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI,
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+        );
+        // Register the channel with the system. You can't change the importance
+        // or other notification behaviors after this.
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 
     /**
@@ -102,15 +154,23 @@ public class TimerActivity extends AppCompatActivity {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
+        final Boolean[] isFirst = {true};
         CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
+            @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
                 numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
                 beepCounter += 1;
+                if(isFirst[0]) {
+                    isFirst[0] = false;
+                    return;
+                }
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
             }
-
+            @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
                 intervalTimingVal.setText(formatTimeString(0));
                 numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
             }
