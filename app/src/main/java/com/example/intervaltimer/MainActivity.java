@@ -4,13 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.example.intervaltimer.validation.InputValidator;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     Spinner intervalTimerSeconds;
     Button submitBtn;
     Button resetBtn;
+    Snackbar errorSnackbar;
     // Dependencies
     InputValidator inputValidator;
 
@@ -34,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         durationHours = findViewById(R.id.duration_time_hours);
         durationMinutes = findViewById(R.id.duration_time_minutes);
         durationSeconds = findViewById(R.id.duration_time_seconds);
@@ -43,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
         intervalTimerSeconds = findViewById(R.id.interval_time_seconds);
         submitBtn = findViewById(R.id.submitBtn);
         resetBtn = findViewById(R.id.resetBtn);
+        errorSnackbar = Snackbar.make(
+                findViewById(android.R.id.content),
+                "The interval must divide equally into the duration.",
+                BaseTransientBottomBar.LENGTH_SHORT
+        );
 
         ArrayAdapter<CharSequence> hoursAdapter = ArrayAdapter.createFromResource(
             this,
@@ -85,14 +90,13 @@ public class MainActivity extends AppCompatActivity {
                 intervalTimerSeconds.getSelectedItem().toString()
             );
 
-            if(inputValidator.fullValidation()) {
-                // Proceed to next screen, passing the values
-                // Also set the number of beeps
+            if (inputValidator.fullValidation()) {
                 redirectToSecondActivity();
             }
             else {
-                // Show an error
-                Toast.makeText(getApplicationContext(), "ERROR: Invalid Input. Try Again.", Toast.LENGTH_LONG).show();
+                if (!errorSnackbar.isShown()) {
+                    errorSnackbar.show();
+                }
             }
         });
 
