@@ -25,9 +25,6 @@ public class InputValidator {
         this.fullDurationTimeSeconds = (this.durationHours * 3600) + (this.durationMinutes*60) + this.durationSeconds;
         this.fullIntervalTimeSeconds = (this.intervalTimerHours * 3600) + (this.intervalTimerMinutes*60) + this.intervalTimerSeconds;
 
-        System.out.println(fullDurationTimeSeconds);
-        System.out.println(fullIntervalTimeSeconds);
-
         this.numOfBeeps = 0;
     }
 
