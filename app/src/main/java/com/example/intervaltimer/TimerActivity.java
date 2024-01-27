@@ -38,6 +38,7 @@ public class TimerActivity extends AppCompatActivity {
     private long durationMillisInput;
     private long intervalMillisInput;
     private int numOfBeepsInput;
+    private Boolean startButtonState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,9 +83,11 @@ public class TimerActivity extends AppCompatActivity {
             timer.cancelTimers();
             TimerActivity.this.finish();
         });
-        startButton.setOnClickListener(view ->
-                timer.startTimers()
-        );
+        startButton.setOnClickListener(view -> {
+            timer.startTimers();
+            startButton.setEnabled(false);
+            startButtonState = false;
+        });
         resetButton.setOnClickListener(view -> {
             timer.cancelTimers();
             resetTimerValues();
@@ -186,7 +189,10 @@ public class TimerActivity extends AppCompatActivity {
         durationVal.setText(formatTimeString(durationMillisInput));
         intervalTimingVal.setText(formatTimeString(intervalMillisInput));
         numberOfBeepsVal.setText(formatNumberOfBeeps(0));
+        startButton.setEnabled(true);
+        startButtonState = true;
         beepCounter = 0;
+
     }
 
     /**
