@@ -7,17 +7,20 @@ import androidx.core.app.NotificationManagerCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.example.intervaltimer.timer.IntervalCountDownTimer;
@@ -25,7 +28,8 @@ import com.example.intervaltimer.timer.IntervalCountDownTimer;
 public class TimerActivity extends AppCompatActivity {
     private String CHANNEL_ID = "1";
     private final int REQUEST_PERMISSION_PHONE_STATE = 1;
-    private NotificationCompat.Builder notificationBuilder;
+    private NotificationCompat.Builder notificationBuilderProgress;
+    private NotificationCompat.Builder notificationBuilderAlarm;
     private NotificationManagerCompat notificationManager;
     private int beepCounter;
     private TextView durationVal;
@@ -63,15 +67,25 @@ public class TimerActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(TimerActivity.this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_PERMISSION_PHONE_STATE);
         }
 
-        // Initialize notification channel and notification settings
-        createNotificationChannel();
-
-        notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("A beep was triggered!!")
-                .setPriority(NotificationCompat.PRIORITY_MAX);
+                .setContentTitle("Time remaining before next interval...")
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                .setOnlyAlertOnce(true);
+
+        notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
+                 .setSmallIcon(R.drawable.ic_launcher_foreground)
+                 .setContentTitle("An interval has finished!!")
+                 .setTimeoutAfter(2000)
+                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                 .setCategory(NotificationCompat.CATEGORY_ALARM);
+
 
         notificationManager = NotificationManagerCompat.from(this);
+
+        // Initialize notification channel and notification settings
+        createNotificationChannel();
 
         // Get button elements
         backButton = findViewById(R.id.back_button);
@@ -112,14 +126,6 @@ public class TimerActivity extends AppCompatActivity {
         int importance = NotificationManager.IMPORTANCE_HIGH;
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
         channel.setDescription(description);
-        // Customize the notification to vibrate and play a noise (can also flash lights)
-        channel.setVibrationPattern(new long[]{0});
-        channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI,
-                new AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-        );
         // Register the channel with the system. You can't change the importance
         // or other notification behaviors after this.
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -133,14 +139,29 @@ public class TimerActivity extends AppCompatActivity {
      * @param intervalMillis Interval value in milliseconds
      * @return The configured CountDownTimer
      */
+    @SuppressLint("MissingPermission")
     private CountDownTimer createDurationTimer(long durationMillis, long intervalMillis) {
+        int PROGRESS_MAX = 100;
+        final Boolean[] isFirstDurationNotification = {true};
+
         CountDownTimer durationTimer = new CountDownTimer(durationMillis, intervalMillis) {
             @Override
             public void onTick(long millisUntilFinished) {
+                int percentage = (int) ((1 - (double)(millisUntilFinished % intervalMillisInput) / intervalMillisInput) * 100);
+                notificationBuilderProgress.setProgress(
+                        PROGRESS_MAX,
+                        percentage,
+                        false
+                );
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
+                if(isFirstDurationNotification[0]) {
+                    notificationBuilderProgress.setOngoing(true);
+                    isFirstDurationNotification[0] = false;
+                }
                 durationVal.setText(formatTimeString(millisUntilFinished));
                 intervalTimingVal.setText(formatTimeString(millisUntilFinished % (intervalMillisInput)));
-            }
 
+            }
             @Override
             public void onFinish() {
                 durationVal.setText(formatTimeString(0));
@@ -157,23 +178,26 @@ public class TimerActivity extends AppCompatActivity {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
-        final Boolean[] isFirst = {true};
+        final Boolean[] isFirstIntervalNotification = {true};
         CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
             @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
                 numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
                 beepCounter += 1;
-                if(isFirst[0]) {
-                    isFirst[0] = false;
+                if(isFirstIntervalNotification[0]) {
+                    isFirstIntervalNotification[0] = false;
                     return;
                 }
-                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
+                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
+                        notificationBuilderAlarm.build());
             }
+
             @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
-                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilder.build());
+                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
+                        notificationBuilderAlarm.build());
                 intervalTimingVal.setText(formatTimeString(0));
                 numberOfBeepsVal.setText(formatNumberOfBeeps(beepCounter));
             }
