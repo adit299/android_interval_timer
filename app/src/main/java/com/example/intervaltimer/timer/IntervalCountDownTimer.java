@@ -167,17 +167,16 @@ public class IntervalCountDownTimer {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
-
-        final Boolean[] isFirstIntervalNotification = {true};
         CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
+            Boolean isFirstIntervalNotification = true;
             @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
                 setsView.setText(TimerUtils.formatSets(setCounter, totalSets));
                 setCounter += 1;
 
-                if(isFirstIntervalNotification[0]) {
-                    isFirstIntervalNotification[0] = false;
+                if(isFirstIntervalNotification) {
+                    isFirstIntervalNotification = false;
                     return;
                 }
                 notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
