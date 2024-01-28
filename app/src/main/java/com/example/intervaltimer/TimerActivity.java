@@ -1,17 +1,33 @@
 package com.example.intervaltimer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.example.intervaltimer.timer.IntervalCountDownTimer;
 import com.example.intervaltimer.timer.TimerButtonAction;
 import com.example.intervaltimer.timer.TimerUtils;
 
 public class TimerActivity extends AppCompatActivity {
+    private String CHANNEL_ID = "1";
+    private final int REQUEST_PERMISSION_PHONE_STATE = 1;
+    private NotificationCompat.Builder notificationBuilderProgress;
+    private NotificationCompat.Builder notificationBuilderAlarm;
+    private NotificationManagerCompat notificationManager;
 
     private TextView durationVal;
     private TextView intervalTimingVal;
@@ -40,20 +56,50 @@ public class TimerActivity extends AppCompatActivity {
         intervalTimingVal = findViewById(R.id.interval_timing_val);
         setsVal = findViewById(R.id.number_of_beeps_val);
 
+        notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Time remaining before next interval...")
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                .setOnlyAlertOnce(true);
+
+        notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("An interval has finished!!")
+                .setTimeoutAfter(2000)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM);
+
+        notificationManager = NotificationManagerCompat.from(this);
+
+
         // Initialize timer
         timer = new IntervalCountDownTimer(
-                durationVal,
-                intervalTimingVal,
-                setsVal,
-                durationMillisInput,
-                intervalMillisInput,
-                setsInput
-        );
+                    durationVal,
+                    intervalTimingVal,
+                    setsVal,
+                    durationMillisInput,
+                    intervalMillisInput,
+                    setsInput,
+                    notificationBuilderProgress,
+                    notificationBuilderAlarm,
+                    notificationManager
+                );
+
+        // Request permissions for notifications
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(TimerActivity.this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_PERMISSION_PHONE_STATE);
+        }
+
+
+        // Initialize notification channel and notification settings
+        createNotificationChannel();
 
         // Initialize text view values
         durationVal.setText(TimerUtils.formatTimeString(durationMillisInput));
         intervalTimingVal.setText(TimerUtils.formatTimeString(intervalMillisInput));
         setsVal.setText(TimerUtils.formatSets(0, setsInput));
+
 
         // Get button elements
         backButton = findViewById(R.id.back_button);
@@ -80,6 +126,21 @@ public class TimerActivity extends AppCompatActivity {
             processButtonPress(TimerButtonAction.RESET);
         });
     }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is not in the Support Library.
+        CharSequence name = getString(R.string.channel_name);
+        String description = getString(R.string.channel_description);
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+        channel.setDescription(description);
+        // Register the channel with the system. You can't change the importance
+        // or other notification behaviors after this.
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+    }
+
 
     private void processButtonPress(TimerButtonAction action) {
         switch (action) {

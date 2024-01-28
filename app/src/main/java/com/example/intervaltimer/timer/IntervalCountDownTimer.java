@@ -1,7 +1,14 @@
 package com.example.intervaltimer.timer;
 
+import android.annotation.SuppressLint;
 import android.os.CountDownTimer;
 import android.widget.TextView;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntervalCountDownTimer {
 
@@ -23,12 +30,21 @@ public class IntervalCountDownTimer {
     private CountDownTimer durationTimer;
     private CountDownTimer intervalTimer;
 
+    private NotificationCompat.Builder notificationBuilderProgress;
+
+    private NotificationCompat.Builder notificationBuilderAlarm;
+
+    private NotificationManagerCompat notificationManager;
+
+
     public IntervalCountDownTimer(TextView durationView,
                                   TextView intervalView,
                                   TextView setsView,
                                   long durationMillis,
                                   long intervalMillis,
-                                  int totalSets) {
+                                  int totalSets, NotificationCompat.Builder notificationBuilderProgress,
+                                  NotificationCompat.Builder notificationBuilderAlarm,
+                                  NotificationManagerCompat notificationManager) {
         this.setCounter = 0;
         this.timerIsRunning = false;
         this.totalSets = totalSets;
@@ -41,6 +57,9 @@ public class IntervalCountDownTimer {
         this.intervalMillisUntilFinished = intervalMillis;
         this.durationTimer = createDurationTimer(durationMillis);
         this.intervalTimer = createIntervalTimer(durationMillis, intervalMillis);
+        this.notificationBuilderProgress = notificationBuilderProgress;
+        this.notificationBuilderAlarm = notificationBuilderAlarm;
+        this.notificationManager = notificationManager;
     }
 
     public boolean isRunning() {
@@ -99,13 +118,32 @@ public class IntervalCountDownTimer {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createDurationTimer(long durationMillis) {
+        int PROGRESS_MAX = 100;
+
         CountDownTimer durationTimer = new CountDownTimer(durationMillis, 100) {
+            Boolean isFirstDurationNotification = true;
+            @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
                 durationMillisUntilFinished = millisUntilFinished;
                 intervalMillisUntilFinished = millisUntilFinished % totalIntervalMillis;
                 durationView.setText(TimerUtils.formatTimeString(durationMillisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(intervalMillisUntilFinished));
+
+
+                int percentage = (int) ((1 - (double)(intervalMillisUntilFinished) / totalIntervalMillis) * 100);
+                notificationBuilderProgress.setProgress(
+                        PROGRESS_MAX,
+                        percentage,
+                        false
+                );
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
+                if(isFirstDurationNotification) {
+                    notificationBuilderProgress.setOngoing(true);
+                    isFirstDurationNotification = false;
+                }
+                durationView.setText(TimerUtils.formatTimeString(millisUntilFinished));
+                intervalView.setText(TimerUtils.formatTimeString(millisUntilFinished % (totalIntervalMillis)));
             }
 
             @Override
@@ -130,14 +168,27 @@ public class IntervalCountDownTimer {
      */
     private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
         CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
+            Boolean isFirstIntervalNotification = true;
+            @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
                 setsView.setText(TimerUtils.formatSets(setCounter, totalSets));
                 setCounter += 1;
+
+                if(isFirstIntervalNotification) {
+                    isFirstIntervalNotification = false;
+                    return;
+                }
+                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
+                        notificationBuilderAlarm.build());
+
             }
 
+            @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
+                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
+                        notificationBuilderAlarm.build());
                 // Do Nothing
             }
         };
