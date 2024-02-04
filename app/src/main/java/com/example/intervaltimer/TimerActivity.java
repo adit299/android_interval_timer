@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.example.intervaltimer.timer.IntervalCountDownTimer;
 import com.example.intervaltimer.timer.TimerButtonAction;
 import com.example.intervaltimer.timer.TimerUtils;
+import com.example.intervaltimer.view.TimerView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 public class TimerActivity extends AppCompatActivity {
@@ -31,9 +32,9 @@ public class TimerActivity extends AppCompatActivity {
     private TextView setsVal;
     private CircularProgressIndicator intervalProgressIndicator;
     private CircularProgressIndicator durationProgressIndicator;
+    private TimerView timerView;
     private Button startButton;
     private Button resetButton;
-    private Button backButton;
     private IntervalCountDownTimer timer;
     private long durationMillisInput;
     private long intervalMillisInput;
@@ -61,6 +62,10 @@ public class TimerActivity extends AppCompatActivity {
         durationProgressIndicator = findViewById(R.id.duration_progress_indicator);
         durationProgressIndicator.setMax((int)(durationMillisInput / 100));
 
+        // Get UI Timer View
+        timerView = findViewById(R.id.timer_view);
+        timerView.setTotalTime(durationMillisInput, intervalMillisInput);
+
         notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("Time remaining before next interval...")
@@ -83,6 +88,7 @@ public class TimerActivity extends AppCompatActivity {
                     durationVal,
                     intervalTimingVal,
                     setsVal,
+                    timerView,
                     intervalProgressIndicator,
                     durationProgressIndicator,
                     durationMillisInput,
@@ -109,14 +115,10 @@ public class TimerActivity extends AppCompatActivity {
 
 
         // Get button elements
-        backButton = findViewById(R.id.back_button);
         startButton = findViewById(R.id.start_timer_button);
         resetButton = findViewById(R.id.reset_timer_button);
 
         // Set button click behaviour
-        backButton.setOnClickListener(view -> {
-            processButtonPress(TimerButtonAction.BACK);
-        });
         startButton.setOnClickListener(view -> {
             if (timer.isRunning()) {
                 processButtonPress(TimerButtonAction.PAUSE);
