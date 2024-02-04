@@ -1,5 +1,6 @@
 package com.example.intervaltimer;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -44,6 +45,7 @@ public class TimerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
+
 
         // Extract initial timer values from saved instance state
         Intent intent = getIntent();
@@ -101,15 +103,11 @@ public class TimerActivity extends AppCompatActivity {
         setsVal.setText(TimerUtils.formatSets(0, setsInput));
 
 
-        // Get button elements
-        backButton = findViewById(R.id.back_button);
+        // Get button element
         startButton = findViewById(R.id.start_timer_button);
         resetButton = findViewById(R.id.reset_timer_button);
 
         // Set button click behaviour
-        backButton.setOnClickListener(view -> {
-            processButtonPress(TimerButtonAction.BACK);
-        });
         startButton.setOnClickListener(view -> {
             if (timer.isRunning()) {
                 processButtonPress(TimerButtonAction.PAUSE);
@@ -125,6 +123,17 @@ public class TimerActivity extends AppCompatActivity {
         resetButton.setOnClickListener(view -> {
             processButtonPress(TimerButtonAction.RESET);
         });
+
+        getOnBackPressedDispatcher().addCallback(
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        timer.cancelTimer();
+                        notificationManager.cancelAll();
+                        TimerActivity.this.finish();
+                    }
+                }
+        );
     }
 
     private void createNotificationChannel() {
@@ -163,6 +172,7 @@ public class TimerActivity extends AppCompatActivity {
                 break;
             case BACK:
                 timer.cancelTimer();
+                notificationManager.cancelAll();
                 TimerActivity.this.finish();
                 break;
         }
