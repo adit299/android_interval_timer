@@ -6,21 +6,19 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.TextView;
-
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.example.intervaltimer.timer.IntervalCountDownTimer;
 import com.example.intervaltimer.timer.TimerButtonAction;
 import com.example.intervaltimer.timer.TimerUtils;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 public class TimerActivity extends AppCompatActivity {
     private String CHANNEL_ID = "1";
@@ -28,10 +26,11 @@ public class TimerActivity extends AppCompatActivity {
     private NotificationCompat.Builder notificationBuilderProgress;
     private NotificationCompat.Builder notificationBuilderAlarm;
     private NotificationManagerCompat notificationManager;
-
     private TextView durationVal;
     private TextView intervalTimingVal;
     private TextView setsVal;
+    private CircularProgressIndicator intervalProgressIndicator;
+    private CircularProgressIndicator durationProgressIndicator;
     private Button startButton;
     private Button resetButton;
     private Button backButton;
@@ -56,6 +55,12 @@ public class TimerActivity extends AppCompatActivity {
         intervalTimingVal = findViewById(R.id.interval_timing_val);
         setsVal = findViewById(R.id.number_of_beeps_val);
 
+        // Get progress indicators
+        intervalProgressIndicator = findViewById(R.id.interval_progress_indicator);
+        intervalProgressIndicator.setMax(1000);
+        durationProgressIndicator = findViewById(R.id.duration_progress_indicator);
+        durationProgressIndicator.setMax((int)(durationMillisInput / 100));
+
         notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("Time remaining before next interval...")
@@ -78,6 +83,8 @@ public class TimerActivity extends AppCompatActivity {
                     durationVal,
                     intervalTimingVal,
                     setsVal,
+                    intervalProgressIndicator,
+                    durationProgressIndicator,
                     durationMillisInput,
                     intervalMillisInput,
                     setsInput,
