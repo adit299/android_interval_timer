@@ -14,22 +14,38 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintHorizontal_bias="0.05"
-        app:layout_constraintVertical_bias="0.025"
+        app:layout_constraintVertical_bias="0.05"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <TextView
-        android:id="@+id/duration_label"
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/interval_progress_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:autoSizeTextType="uniform"
-        android:text="Duration:"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        app:layout_constraintHorizontal_bias="0.4"
-        app:layout_constraintVertical_bias="0.25"
+        android:progress="1"
+        app:trackThickness="10dp"
+        app:indicatorSize="270dp"
+        app:showAnimationBehavior="outward"
+        app:trackCornerRadius="10dp"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/duration_progress_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:trackThickness="10dp"
+        app:indicatorSize="300dp"
+        app:showAnimationBehavior="outward"
+        app:trackCornerRadius="10dp"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -43,26 +59,12 @@
         android:text="TextView"
         android:textAlignment="textStart"
         android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/duration_label"
-        app:layout_constraintTop_toTopOf="@id/duration_label"
-        app:layout_constraintVertical_bias="0"
-        app:layout_constraintHorizontal_bias="0.2"/>
-
-    <TextView
-        android:id="@+id/interval_timing_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:autoSizeTextType="uniform"
-        android:text="Interval Timing:"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintVertical_bias="0.4"
-        app:layout_constraintEnd_toEndOf="@id/duration_label"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/interval_timing_val"
+        app:layout_constraintVertical_bias="1"
+        app:layout_constraintHorizontal_bias="0.5"/>
 
     <TextView
         android:id="@+id/interval_timing_val"
@@ -72,26 +74,12 @@
         android:text="TextView"
         android:textAlignment="textStart"
         android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/interval_timing_label"
-        app:layout_constraintTop_toTopOf="@id/interval_timing_label"
-        app:layout_constraintVertical_bias="0"
-        app:layout_constraintHorizontal_bias="0.2" />
-
-    <TextView
-        android:id="@+id/number_of_beeps_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:autoSizeTextType="uniform"
-        android:text="Number of Beeps:"
-        android:textAlignment="textEnd"
-        android:textSize="24sp"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintVertical_bias="0.55"
-        app:layout_constraintEnd_toEndOf="@id/interval_timing_label"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.5" />
 
     <TextView
         android:id="@+id/number_of_beeps_val"
@@ -101,12 +89,12 @@
         android:text="TextView"
         android:textAlignment="textStart"
         android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/interval_timing_val"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/number_of_beeps_label"
-        app:layout_constraintTop_toTopOf="@id/number_of_beeps_label"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0"
-        app:layout_constraintHorizontal_bias="0.2" />
+        app:layout_constraintHorizontal_bias="0.5" />
 
     <Button
         android:id="@+id/start_timer_button"

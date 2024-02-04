@@ -13,7 +13,14 @@ public class TimerUtils {
         int seconds = (int) (millis / 1000) % 60;
         int minutes = (int) ((millis / (1000*60)) % 60);
         int hours = (int) ((millis / (1000*60*60)) % 24);
-        return String.format("%02d:%02d:%02d.%d", hours, minutes, seconds, tenths);
+        String time = String.format("%02d.%d", seconds, tenths);
+        if (minutes > 0) {
+            time = String.format("%02d:", minutes) + time;
+        }
+        if (hours > 0) {
+            time = String.format("%02d:", hours) + time;
+        }
+        return time;
     }
 
     /**
