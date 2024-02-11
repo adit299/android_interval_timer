@@ -144,11 +144,13 @@ public class IntervalCountDownTimer {
                                 .addLine(String.format("Total Duration: %s", TimerUtils.formatTimeStringNoTenths(millisUntilFinished)))
                 );
 
-                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
                 if(isFirstDurationNotification) {
                     notificationBuilderProgress.setOngoing(true);
                     isFirstDurationNotification = false;
                 }
+
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
+
                 durationView.setText(TimerUtils.formatTimeString(millisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(millisUntilFinished % (totalIntervalMillis)));
             }
@@ -161,7 +163,6 @@ public class IntervalCountDownTimer {
                 durationMillisUntilFinished = 0;
                 intervalMillisUntilFinished = 0;
                 timerIsRunning = false;
-                notificationManager.cancelAll();
             }
         };
         return durationTimer;
@@ -175,6 +176,7 @@ public class IntervalCountDownTimer {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
+        int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
         CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
             Boolean isFirstIntervalNotification = true;
             @SuppressLint("MissingPermission")
@@ -187,15 +189,14 @@ public class IntervalCountDownTimer {
                     isFirstIntervalNotification = false;
                     return;
                 }
-
-                int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter - 1));
                 notificationManager.notify(notificationId, notificationBuilderAlarm.build());
             }
 
             @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
-                int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", totalSets));
                 notificationManager.notify(notificationId, notificationBuilderAlarm.build());
                 // Do Nothing
             }
