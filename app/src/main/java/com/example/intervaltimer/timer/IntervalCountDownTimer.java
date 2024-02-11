@@ -130,13 +130,20 @@ public class IntervalCountDownTimer {
                 durationView.setText(TimerUtils.formatTimeString(durationMillisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(intervalMillisUntilFinished));
 
-
                 int percentage = (int) ((1 - (double)(intervalMillisUntilFinished) / totalIntervalMillis) * 100);
                 notificationBuilderProgress.setProgress(
                         PROGRESS_MAX,
                         percentage,
                         false
                 );
+
+                notificationBuilderProgress.setContentTitle(String.format("Sets: %s", TimerUtils.formatSets(setCounter, totalSets)));
+                notificationBuilderProgress.setStyle(
+                        new NotificationCompat.InboxStyle()
+                                .addLine(String.format("Interval Duration: %s", TimerUtils.formatTimeStringNoTenths(millisUntilFinished % (totalIntervalMillis))))
+                                .addLine(String.format("Total Duration: %s", TimerUtils.formatTimeStringNoTenths(millisUntilFinished)))
+                );
+
                 notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
                 if(isFirstDurationNotification) {
                     notificationBuilderProgress.setOngoing(true);
@@ -154,6 +161,7 @@ public class IntervalCountDownTimer {
                 durationMillisUntilFinished = 0;
                 intervalMillisUntilFinished = 0;
                 timerIsRunning = false;
+                notificationManager.cancelAll();
             }
         };
         return durationTimer;
@@ -179,16 +187,16 @@ public class IntervalCountDownTimer {
                     isFirstIntervalNotification = false;
                     return;
                 }
-                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
-                        notificationBuilderAlarm.build());
 
+                int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+                notificationManager.notify(notificationId, notificationBuilderAlarm.build());
             }
 
             @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
-                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
-                        notificationBuilderAlarm.build());
+                int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+                notificationManager.notify(notificationId, notificationBuilderAlarm.build());
                 // Do Nothing
             }
         };

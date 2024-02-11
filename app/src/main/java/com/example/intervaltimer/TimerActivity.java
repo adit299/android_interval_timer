@@ -46,7 +46,6 @@ public class TimerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
 
-
         // Extract initial timer values from saved instance state
         Intent intent = getIntent();
         durationMillisInput = intent.getLongExtra(MainActivity.DURATION_INTENT_KEY, 0);
@@ -60,20 +59,18 @@ public class TimerActivity extends AppCompatActivity {
 
         notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("Time remaining before next interval...")
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS)
                 .setOnlyAlertOnce(true);
 
         notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("An interval has finished!!")
-                .setTimeoutAfter(2000)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setTimeoutAfter(1000)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_ALARM);
 
         notificationManager = NotificationManagerCompat.from(this);
-
 
         // Initialize timer
         timer = new IntervalCountDownTimer(
