@@ -66,7 +66,7 @@ public class TimerActivity extends AppCompatActivity {
 
         notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setTimeoutAfter(1000)
+                .setTimeoutAfter(1500)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_ALARM);
 
