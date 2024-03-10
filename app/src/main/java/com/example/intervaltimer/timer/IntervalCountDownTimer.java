@@ -130,18 +130,27 @@ public class IntervalCountDownTimer {
                 durationView.setText(TimerUtils.formatTimeString(durationMillisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(intervalMillisUntilFinished));
 
-
                 int percentage = (int) ((1 - (double)(intervalMillisUntilFinished) / totalIntervalMillis) * 100);
                 notificationBuilderProgress.setProgress(
                         PROGRESS_MAX,
                         percentage,
                         false
                 );
-                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
+
+                notificationBuilderProgress.setContentTitle(String.format("Sets: %s", TimerUtils.formatSets(setCounter, totalSets)));
+                notificationBuilderProgress.setStyle(
+                        new NotificationCompat.InboxStyle()
+                                .addLine(String.format("Interval Duration: %s", TimerUtils.formatTimeStringNoTenths(millisUntilFinished % (totalIntervalMillis))))
+                                .addLine(String.format("Total Duration: %s", TimerUtils.formatTimeStringNoTenths(millisUntilFinished)))
+                );
+
                 if(isFirstDurationNotification) {
                     notificationBuilderProgress.setOngoing(true);
                     isFirstDurationNotification = false;
                 }
+
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
+
                 durationView.setText(TimerUtils.formatTimeString(millisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(millisUntilFinished % (totalIntervalMillis)));
             }
@@ -167,6 +176,7 @@ public class IntervalCountDownTimer {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createIntervalTimer(long durationMillis, long intervalMillis) {
+        int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
         CountDownTimer intervalTimer = new CountDownTimer(durationMillis, intervalMillis) {
             Boolean isFirstIntervalNotification = true;
             @SuppressLint("MissingPermission")
@@ -179,16 +189,15 @@ public class IntervalCountDownTimer {
                     isFirstIntervalNotification = false;
                     return;
                 }
-                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
-                        notificationBuilderAlarm.build());
-
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter - 1));
+                notificationManager.notify(notificationId, notificationBuilderAlarm.build());
             }
 
             @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
-                notificationManager.notify(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE),
-                        notificationBuilderAlarm.build());
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", totalSets));
+                notificationManager.notify(notificationId, notificationBuilderAlarm.build());
                 // Do Nothing
             }
         };
