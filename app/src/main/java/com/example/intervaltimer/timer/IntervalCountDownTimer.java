@@ -213,13 +213,17 @@ public class IntervalCountDownTimer {
      */
     private CountDownTimer createResumeIntervalTimer(long intervalTimeRemaining) {
         CountDownTimer resumeIntervalTimer = new CountDownTimer(intervalTimeRemaining, intervalTimeRemaining) {
+            int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
             @Override
             public void onTick(long millisUntilFinished) {
                 // Do nothing until finished
             }
 
+            @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter));
+                notificationManager.notify(notificationId, notificationBuilderAlarm.build());
                 intervalTimer = createIntervalTimer(durationMillisUntilFinished, totalIntervalMillis);
                 intervalTimer.start();
             }
