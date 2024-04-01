@@ -1,5 +1,6 @@
 package com.example.intervaltimer;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -68,20 +69,18 @@ public class TimerActivity extends AppCompatActivity {
 
         notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("Time remaining before next interval...")
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setAutoCancel(false)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS)
                 .setOnlyAlertOnce(true);
 
         notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("An interval has finished!!")
-                .setTimeoutAfter(2000)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setTimeoutAfter(1500)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_ALARM);
 
         notificationManager = NotificationManagerCompat.from(this);
-
 
         // Initialize timer
         timer = new IntervalCountDownTimer(
@@ -113,8 +112,6 @@ public class TimerActivity extends AppCompatActivity {
         intervalTimingVal.setText(TimerUtils.formatTimeString(intervalMillisInput));
         setsVal.setText(TimerUtils.formatSets(0, setsInput));
 
-
-        // Get button elements
         startButton = findViewById(R.id.start_timer_button);
         resetButton = findViewById(R.id.reset_timer_button);
 
@@ -134,6 +131,17 @@ public class TimerActivity extends AppCompatActivity {
         resetButton.setOnClickListener(view -> {
             processButtonPress(TimerButtonAction.RESET);
         });
+
+        getOnBackPressedDispatcher().addCallback(
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        timer.cancelTimer();
+                        notificationManager.cancelAll();
+                        TimerActivity.this.finish();
+                    }
+                }
+        );
     }
 
     private void createNotificationChannel() {
@@ -172,6 +180,7 @@ public class TimerActivity extends AppCompatActivity {
                 break;
             case BACK:
                 timer.cancelTimer();
+                notificationManager.cancelAll();
                 TimerActivity.this.finish();
                 break;
         }
