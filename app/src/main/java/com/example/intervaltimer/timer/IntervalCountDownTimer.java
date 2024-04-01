@@ -74,6 +74,8 @@ public class IntervalCountDownTimer {
         this.notificationBuilderProgress = notificationBuilderProgress;
         this.notificationBuilderAlarm = notificationBuilderAlarm;
         this.notificationManager = notificationManager;
+
+        this.intervalProgressIndicator.setTrackThickness(200);
     }
 
     public boolean isRunning() {

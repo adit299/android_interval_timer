@@ -31,8 +31,8 @@ public class TimerView extends View {
     private long totalDurationMillis;
     private long totalIntervalMillis;
 
-    public TimerView(Context context) {
-        super(context);
+    public TimerView(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
     public void setTotalTime(long totalDuration, long totalInterval) {
