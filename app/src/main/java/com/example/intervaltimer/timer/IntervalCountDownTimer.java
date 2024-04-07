@@ -7,19 +7,27 @@ import android.widget.TextView;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.example.intervaltimer.view.TimerView;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntervalCountDownTimer {
 
+    private static final int PROGRESS_MAX = 100;
+    private static final float FULL_ROTATION = 360f;
     // Helper values
     private int setCounter;
     private boolean timerIsRunning;
 
     // UI values
-    private TextView durationView;
-    private TextView intervalView;
-    private TextView setsView;
+    private final TextView durationView;
+    private final TextView intervalView;
+    private final TextView setsView;
+    private final CircularProgressIndicator intervalProgressIndicator;
+    private final CircularProgressIndicator durationProgressIndicator;
+    private final TimerView timerView;
     private long totalDurationMillis;
     private long totalIntervalMillis;
     private long durationMillisUntilFinished;
@@ -40,6 +48,9 @@ public class IntervalCountDownTimer {
     public IntervalCountDownTimer(TextView durationView,
                                   TextView intervalView,
                                   TextView setsView,
+                                  TimerView timerView,
+                                  CircularProgressIndicator intervalProgressIndicator,
+                                  CircularProgressIndicator durationProgressIndicator,
                                   long durationMillis,
                                   long intervalMillis,
                                   int totalSets, NotificationCompat.Builder notificationBuilderProgress,
@@ -51,6 +62,9 @@ public class IntervalCountDownTimer {
         this.durationView = durationView;
         this.intervalView = intervalView;
         this.setsView = setsView;
+        this.timerView = timerView;
+        this.intervalProgressIndicator = intervalProgressIndicator;
+        this.durationProgressIndicator = durationProgressIndicator;
         this.totalDurationMillis = durationMillis;
         this.totalIntervalMillis = intervalMillis;
         this.durationMillisUntilFinished = durationMillis;
@@ -60,6 +74,8 @@ public class IntervalCountDownTimer {
         this.notificationBuilderProgress = notificationBuilderProgress;
         this.notificationBuilderAlarm = notificationBuilderAlarm;
         this.notificationManager = notificationManager;
+
+        this.intervalProgressIndicator.setTrackThickness(200);
     }
 
     public boolean isRunning() {
@@ -101,6 +117,9 @@ public class IntervalCountDownTimer {
         durationView.setText(TimerUtils.formatTimeString(totalDurationMillis));
         intervalView.setText(TimerUtils.formatTimeString(totalIntervalMillis));
         setsView.setText(TimerUtils.formatSets(setCounter, totalSets));
+        // Rest progress bar
+        intervalProgressIndicator.setRotation(0);
+        durationProgressIndicator.setProgress(0);
     }
 
     public long getRemainingDuration() {
@@ -118,7 +137,6 @@ public class IntervalCountDownTimer {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createDurationTimer(long durationMillis) {
-        int PROGRESS_MAX = 100;
 
         CountDownTimer durationTimer = new CountDownTimer(durationMillis, 100) {
             Boolean isFirstDurationNotification = true;
@@ -130,10 +148,14 @@ public class IntervalCountDownTimer {
                 durationView.setText(TimerUtils.formatTimeString(durationMillisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(intervalMillisUntilFinished));
 
-                int percentage = (int) ((1 - (double)(intervalMillisUntilFinished) / totalIntervalMillis) * 100);
+                int intervalPercentage = (int) ((1 - (double)(intervalMillisUntilFinished) / totalIntervalMillis) * 100);
+                int durationProgress = (int)((totalDurationMillis - durationMillisUntilFinished) / 100);
+                float intervalPercentageFloat = ((1 - (float)(intervalMillisUntilFinished) / totalIntervalMillis) * 100f);
+                float intervalProgressDegrees = (intervalPercentageFloat / 100f) * FULL_ROTATION;
+
                 notificationBuilderProgress.setProgress(
                         PROGRESS_MAX,
-                        percentage,
+                        intervalPercentage,
                         false
                 );
 
@@ -153,6 +175,15 @@ public class IntervalCountDownTimer {
 
                 durationView.setText(TimerUtils.formatTimeString(millisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(millisUntilFinished % (totalIntervalMillis)));
+                intervalProgressIndicator.setRotation(intervalProgressDegrees);
+                durationProgressIndicator.setProgress(durationProgress);
+
+
+                timerView.setElapsedTime(
+                        totalDurationMillis - durationMillisUntilFinished,
+                        totalIntervalMillis - intervalMillisUntilFinished
+                );
+                timerView.invalidate();
             }
 
             @Override
@@ -160,6 +191,13 @@ public class IntervalCountDownTimer {
                 durationView.setText(TimerUtils.formatTimeString(0));
                 intervalView.setText(TimerUtils.formatTimeString(0));
                 setsView.setText(TimerUtils.formatSets(totalSets, totalSets));
+                notificationBuilderProgress.setProgress(
+                        PROGRESS_MAX,
+                        PROGRESS_MAX,
+                        false
+                );
+                intervalProgressIndicator.setRotation(0);
+                durationProgressIndicator.setProgress((int)(totalDurationMillis / 100));
                 durationMillisUntilFinished = 0;
                 intervalMillisUntilFinished = 0;
                 timerIsRunning = false;
