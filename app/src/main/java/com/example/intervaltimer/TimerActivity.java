@@ -62,8 +62,7 @@ public class TimerActivity extends AppCompatActivity {
                 .setAutoCancel(false)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS)
-                .setOnlyAlertOnce(true)
-                .setSilent(true);
+                .setOnlyAlertOnce(true);
 
         notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
