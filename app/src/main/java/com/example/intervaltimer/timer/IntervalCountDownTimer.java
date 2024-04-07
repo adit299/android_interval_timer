@@ -186,6 +186,7 @@ public class IntervalCountDownTimer {
                 timerView.invalidate();
             }
 
+            @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
                 durationView.setText(TimerUtils.formatTimeString(0));
@@ -201,6 +202,13 @@ public class IntervalCountDownTimer {
                 durationMillisUntilFinished = 0;
                 intervalMillisUntilFinished = 0;
                 timerIsRunning = false;
+                // Set progress bar in notification to be 100% full
+                notificationBuilderProgress.setProgress(
+                        PROGRESS_MAX,
+                        PROGRESS_MAX,
+                        false
+                );
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
             }
         };
         return durationTimer;
@@ -251,13 +259,17 @@ public class IntervalCountDownTimer {
      */
     private CountDownTimer createResumeIntervalTimer(long intervalTimeRemaining) {
         CountDownTimer resumeIntervalTimer = new CountDownTimer(intervalTimeRemaining, intervalTimeRemaining) {
+            int notificationId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
             @Override
             public void onTick(long millisUntilFinished) {
                 // Do nothing until finished
             }
 
+            @SuppressLint("MissingPermission")
             @Override
             public void onFinish() {
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter));
+                notificationManager.notify(notificationId, notificationBuilderAlarm.build());
                 intervalTimer = createIntervalTimer(durationMillisUntilFinished, totalIntervalMillis);
                 intervalTimer.start();
             }
