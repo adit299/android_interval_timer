@@ -68,14 +68,14 @@ public class TimerActivity extends AppCompatActivity {
         timerView.setTotalTime(durationMillisInput, intervalMillisInput);
 
         notificationBuilderProgress = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setAutoCancel(false)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS)
                 .setOnlyAlertOnce(true);
 
         notificationBuilderAlarm = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setTimeoutAfter(1500)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_ALARM);
