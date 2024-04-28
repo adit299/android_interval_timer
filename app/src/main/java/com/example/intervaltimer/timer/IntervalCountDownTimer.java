@@ -56,7 +56,7 @@ public class IntervalCountDownTimer {
                                   int totalSets, NotificationCompat.Builder notificationBuilderProgress,
                                   NotificationCompat.Builder notificationBuilderAlarm,
                                   NotificationManagerCompat notificationManager) {
-        this.setCounter = 0;
+        this.setCounter = 1;
         this.timerIsRunning = false;
         this.totalSets = totalSets;
         this.durationView = durationView;
@@ -75,7 +75,7 @@ public class IntervalCountDownTimer {
         this.notificationBuilderAlarm = notificationBuilderAlarm;
         this.notificationManager = notificationManager;
 
-        this.intervalProgressIndicator.setTrackThickness(200);
+        this.intervalProgressIndicator.setTrackThickness(175);
     }
 
     public boolean isRunning() {
@@ -110,7 +110,7 @@ public class IntervalCountDownTimer {
         // Create new timers with initial input values
         durationTimer = createDurationTimer(totalDurationMillis);
         intervalTimer = createIntervalTimer(totalDurationMillis, totalIntervalMillis);
-        setCounter = 0;
+        setCounter = 1;
         durationMillisUntilFinished = totalDurationMillis;
         intervalMillisUntilFinished = totalIntervalMillis;
         // Reset UI test to initial values
@@ -228,14 +228,13 @@ public class IntervalCountDownTimer {
             @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
-                setsView.setText(TimerUtils.formatSets(setCounter, totalSets));
-                setCounter += 1;
-
                 if(isFirstIntervalNotification) {
                     isFirstIntervalNotification = false;
                     return;
                 }
-                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter - 1));
+                notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter));
+                setCounter += 1;
+                setsView.setText(TimerUtils.formatSets(setCounter, totalSets));
                 notificationManager.notify(notificationId, notificationBuilderAlarm.build());
             }
 
@@ -269,6 +268,8 @@ public class IntervalCountDownTimer {
             @Override
             public void onFinish() {
                 notificationBuilderAlarm.setContentTitle(String.format("Set number %d has completed!!", setCounter));
+                setCounter += 1;
+                setsView.setText(TimerUtils.formatSets(setCounter, totalSets));
                 notificationManager.notify(notificationId, notificationBuilderAlarm.build());
                 intervalTimer = createIntervalTimer(durationMillisUntilFinished, totalIntervalMillis);
                 intervalTimer.start();

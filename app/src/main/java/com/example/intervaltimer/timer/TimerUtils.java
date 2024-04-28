@@ -14,7 +14,7 @@ public class TimerUtils {
         int minutes = (int) ((millis / (1000*60)) % 60);
         int hours = (int) ((millis / (1000*60*60)) % 24);
         String time = String.format("%02d.%d", seconds, tenths);
-        if (minutes > 0) {
+        if (minutes > 0 || hours > 0) {
             time = String.format("%02d:", minutes) + time;
         }
         if (hours > 0) {

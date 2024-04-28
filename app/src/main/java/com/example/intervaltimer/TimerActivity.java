@@ -55,7 +55,7 @@ public class TimerActivity extends AppCompatActivity {
         // Get text views
         durationVal = findViewById(R.id.duration_val);
         intervalTimingVal = findViewById(R.id.interval_timing_val);
-        setsVal = findViewById(R.id.number_of_beeps_val);
+        setsVal = findViewById(R.id.sets_val);
 
         // Get progress indicators
         intervalProgressIndicator = findViewById(R.id.interval_progress_indicator);
@@ -110,7 +110,7 @@ public class TimerActivity extends AppCompatActivity {
         // Initialize text view values
         durationVal.setText(TimerUtils.formatTimeString(durationMillisInput));
         intervalTimingVal.setText(TimerUtils.formatTimeString(intervalMillisInput));
-        setsVal.setText(TimerUtils.formatSets(0, setsInput));
+        setsVal.setText(TimerUtils.formatSets(1, setsInput));
 
         startButton = findViewById(R.id.start_timer_button);
         resetButton = findViewById(R.id.reset_timer_button);
