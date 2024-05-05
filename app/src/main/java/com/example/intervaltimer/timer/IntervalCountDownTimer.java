@@ -44,6 +44,8 @@ public class IntervalCountDownTimer {
 
     private NotificationManagerCompat notificationManager;
 
+    private Boolean isFirstDurationNotification;
+
 
     public IntervalCountDownTimer(TextView durationView,
                                   TextView intervalView,
@@ -107,6 +109,9 @@ public class IntervalCountDownTimer {
 
     public void resetTimer() {
         cancelTimer();
+        // Reset timer notification behaviour
+        notificationBuilderProgress.setOngoing(false);
+        notificationBuilderProgress.setOnlyAlertOnce(false);
         // Create new timers with initial input values
         durationTimer = createDurationTimer(totalDurationMillis);
         intervalTimer = createIntervalTimer(totalDurationMillis, totalIntervalMillis);
@@ -137,9 +142,8 @@ public class IntervalCountDownTimer {
      * @return The configured CountDownTimer
      */
     private CountDownTimer createDurationTimer(long durationMillis) {
-
+        isFirstDurationNotification = true;
         CountDownTimer durationTimer = new CountDownTimer(durationMillis, 100) {
-            Boolean isFirstDurationNotification = true;
             @SuppressLint("MissingPermission")
             @Override
             public void onTick(long millisUntilFinished) {
@@ -166,12 +170,13 @@ public class IntervalCountDownTimer {
                                 .addLine(String.format("Total Duration: %s", TimerUtils.formatTimeStringNoTenths(millisUntilFinished)))
                 );
 
+                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
+
                 if(isFirstDurationNotification) {
                     notificationBuilderProgress.setOngoing(true);
+                    notificationBuilderProgress.setOnlyAlertOnce(true);
                     isFirstDurationNotification = false;
                 }
-
-                notificationManager.notify(new AtomicInteger().incrementAndGet(), notificationBuilderProgress.build());
 
                 durationView.setText(TimerUtils.formatTimeString(millisUntilFinished));
                 intervalView.setText(TimerUtils.formatTimeString(millisUntilFinished % (totalIntervalMillis)));
@@ -202,6 +207,7 @@ public class IntervalCountDownTimer {
                 durationMillisUntilFinished = 0;
                 intervalMillisUntilFinished = 0;
                 timerIsRunning = false;
+
                 // Set progress bar in notification to be 100% full
                 notificationBuilderProgress.setProgress(
                         PROGRESS_MAX,
