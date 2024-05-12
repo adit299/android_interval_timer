@@ -16,9 +16,8 @@ The list of permissions required by the app can be found in the `AndroidManifest
 https://github.com/adit299/android_interval_timer/blob/main/app/src/main/AndroidManifest.xml#L4
 <br/>
 
-| Permission | Why it is required |
-| :---: | --- |
-
+| Permission                              | Why it is required |
+| --------------------------------------- | ------------------ |
 | `android.permission.POST_NOTIFICATIONS` | Required by the app to post notifications. Has to be granted by the user manually; can be revoked by the system or the user at any time. It is highly recommended that you allow this permission so that the app can show the alarm dismissal screen when the alarm rings. |
 
  <hr style="border:1px solid gray">
