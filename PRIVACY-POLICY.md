@@ -2,7 +2,7 @@
 
 Welcome to the Android Interval Timer app for Android!
 
-This is an open source Android app developed by Adit Krishnan and Adam Rust. The source code is available on GitHub under the MIT License.
+The source code is available on GitHub under the MIT License.
 
 
 ### Data collected by the app
@@ -22,7 +22,4 @@ https://github.com/adit299/android_interval_timer/blob/main/app/src/main/Android
 
  <hr style="border:1px solid gray">
 
-If you find any security vulnerability that has been inadvertently caused by us, or have any question regarding how the app protects your privacy, please send us an email or post a discussion on GitHub, and we will surely try to fix it/help you.
-
-Yours sincerely,  
-Adit Krishnan and Adam Rust.  
+If you find any security vulnerability that has been inadvertently caused by us, or have any question regarding how the app protects your privacy, please send us an email or post a discussion on GitHub, and we will surely try to fix it/help you. 
