@@ -7,7 +7,7 @@ This is an open source Android app developed by Adit Krishnan and Adam Rust. The
 
 ### Data collected by the app
 
-We hereby state, to the best of our knowledge and belief, that we have not programmed this app to collect any personally identifiable information. All data (app preferences (like theme) and alarms) created by the you (the user) is stored locally in your device only, and can be simply erased by clearing the app's data or uninstalling it. No analytics software is present in the app either.
+We hereby state, to the best of our knowledge and belief, that we have not programmed this app to collect any personally identifiable information. All data (app preferences (like theme) and alarms) created by you (the user) is stored locally in your device only, and can be simply erased by clearing the app's data or uninstalling it. No analytics software is present in the app either.
 
 ### Explanation of permissions requested in the app
 
